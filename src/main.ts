@@ -33,7 +33,7 @@ import Stats from './Stats.vue'
 // components
 import Navbar from './components/Navbar.vue'
 import OrganizerCard from './components/OrganizerCard.vue'
-import ScheduleSession from './components/ScheduleSession.vue'
+import ScheduleSessionGroup from './components/ScheduleSessionGroup.vue'
 
 const routes = [
   { path: '/', component: Home },
@@ -50,7 +50,7 @@ export const router = createRouter({
 const app = createApp(App)
 // adding components
 app.component('Navbar', Navbar)
-app.component('ScheduleSession', ScheduleSession)
+app.component('ScheduleSessionGroup', ScheduleSessionGroup)
 app.component('OrganizerCard', OrganizerCard)
 // adding libraries
 app.use(router)

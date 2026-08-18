@@ -23,22 +23,8 @@
           </h2>
           <div class="accordion-collapse" :class="openPast ? 'collapse show' : 'collapse'">
             <div class="accordion-body">
-              <template v-for="(session, index) in pagedPastSessions" :key="'past-' + index">
-                <ScheduleSession
-                  :session_number="session.session_number"
-                  :date="session.date"
-                  :time="session.time"
-                  :venue="session.venue"
-                  :topic="session.topic"
-                  :presenter="session.presenter"
-                  :paper_authors="session.paper_authors"
-                  :paper_title="session.paper_title"
-                  :paper_venue="session.paper_venue"
-                  :paper_year="session.paper_year"
-                  :slides_link="session.slides_link"
-                  :paper_link="session.paper_link"
-                  :arxiv_link="session.arxiv_link"
-                />
+              <template v-for="(group, index) in pagedPastGroups" :key="'past-' + index">
+                <ScheduleSessionGroup :sessions="group" />
               </template>
               <p v-if="!pastSessions.length" class="text-muted">No past seminars yet.</p>
               <nav v-if="pastTotalPages > 1" class="mt-3">
@@ -84,22 +70,7 @@
                 <div class="text-muted lead">Retrieving data...</div>
               </div>
               <template v-else>
-                <ScheduleSession
-                  v-if="nextSession"
-                  :session_number="nextSession.session_number"
-                  :date="nextSession.date"
-                  :time="nextSession.time"
-                  :venue="nextSession.venue"
-                  :topic="nextSession.topic"
-                  :presenter="nextSession.presenter"
-                  :paper_authors="nextSession.paper_authors"
-                  :paper_title="nextSession.paper_title"
-                  :paper_venue="nextSession.paper_venue"
-                  :paper_year="nextSession.paper_year"
-                  :slides_link="nextSession.slides_link"
-                  :paper_link="nextSession.paper_link"
-                  :arxiv_link="nextSession.arxiv_link"
-                />
+                <ScheduleSessionGroup v-if="nextGroup" :sessions="nextGroup" />
                 <p v-else class="text-muted">No upcoming seminar scheduled.</p>
               </template>
             </div>
@@ -121,24 +92,10 @@
           <div class="accordion-collapse" :class="openScheduled ? 'collapse show' : 'collapse'">
             <div class="accordion-body">
               <template
-                v-for="(session, index) in pagedScheduledSessions"
+                v-for="(group, index) in pagedScheduledGroups"
                 :key="'scheduled-' + index"
               >
-                <ScheduleSession
-                  :session_number="session.session_number"
-                  :date="session.date"
-                  :time="session.time"
-                  :topic="session.topic"
-                  :venue="session.venue"
-                  :presenter="session.presenter"
-                  :paper_authors="session.paper_authors"
-                  :paper_title="session.paper_title"
-                  :paper_venue="session.paper_venue"
-                  :paper_year="session.paper_year"
-                  :slides_link="session.slides_link"
-                  :paper_link="session.paper_link"
-                  :arxiv_link="session.arxiv_link"
-                />
+                <ScheduleSessionGroup :sessions="group" />
               </template>
               <p v-if="!scheduledSessions.length" class="text-muted">
                 No further seminars scheduled.
@@ -209,28 +166,49 @@ interface Session {
 
 const sessions = ref<Session[]>([])
 
-const now = new Date()
-now.setHours(now.getHours() - 2)
+const today = new Date()
+const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+const isPastDate = (date: string) => date < todayStr
 
-const pastSessions = computed(() => sessions.value.filter((s) => new Date(s.date) < now))
+const groupByDate = (list: Session[]): Session[][] => {
+  const groups: Session[][] = []
+  const indexByDate = new Map<string, number>()
+  for (const session of list) {
+    const existingIndex = indexByDate.get(session.date)
+    if (existingIndex === undefined) {
+      indexByDate.set(session.date, groups.length)
+      groups.push([session])
+    } else {
+      groups[existingIndex]!.push(session)
+    }
+  }
+  return groups
+}
 
-const nextSession = computed(() => sessions.value.find((s) => new Date(s.date) >= now) ?? null)
+const pastSessions = computed(() => sessions.value.filter((s) => isPastDate(s.date)))
 
-const scheduledSessions = computed(() =>
-  sessions.value.filter((s) => new Date(s.date) >= now && s !== nextSession.value),
-)
+const futureSessions = computed(() => sessions.value.filter((s) => !isPastDate(s.date)))
 
-const pastTotalPages = computed(() => Math.ceil(pastSessions.value.length / PAGE_SIZE))
-const scheduledTotalPages = computed(() => Math.ceil(scheduledSessions.value.length / PAGE_SIZE))
+const pastGroups = computed(() => groupByDate(pastSessions.value))
+const futureGroups = computed(() => groupByDate(futureSessions.value))
 
-const pagedPastSessions = computed(() => {
+const nextGroup = computed(() => futureGroups.value[0] ?? null)
+
+const scheduledGroups = computed(() => futureGroups.value.slice(1))
+
+const scheduledSessions = computed(() => scheduledGroups.value.flat())
+
+const pastTotalPages = computed(() => Math.ceil(pastGroups.value.length / PAGE_SIZE))
+const scheduledTotalPages = computed(() => Math.ceil(scheduledGroups.value.length / PAGE_SIZE))
+
+const pagedPastGroups = computed(() => {
   const start = (pastPage.value - 1) * PAGE_SIZE
-  return pastSessions.value.slice(start, start + PAGE_SIZE)
+  return pastGroups.value.slice(start, start + PAGE_SIZE)
 })
 
-const pagedScheduledSessions = computed(() => {
+const pagedScheduledGroups = computed(() => {
   const start = (scheduledPage.value - 1) * PAGE_SIZE
-  return scheduledSessions.value.slice(start, start + PAGE_SIZE)
+  return scheduledGroups.value.slice(start, start + PAGE_SIZE)
 })
 
 const or = (val: string) => val?.trim() || null
@@ -285,7 +263,7 @@ onMounted(async () => {
 
   const mapped = (parsed as any[]).map((row, index) => {
     const date = or(row.date) ?? ''
-    const isPast = new Date(date) < now
+    const isPast = isPastDate(date)
     return {
       session_number: index + 1,
       date,
@@ -304,10 +282,10 @@ onMounted(async () => {
   })
 
   const past = mapped
-    .filter((s) => new Date(s.date) < now)
+    .filter((s) => isPastDate(s.date))
     .sort((a, b) => b.date.localeCompare(a.date))
   const future = mapped
-    .filter((s) => new Date(s.date) >= now)
+    .filter((s) => !isPastDate(s.date))
     .sort((a, b) => a.date.localeCompare(b.date))
 
   sessions.value = [...past, ...future]
