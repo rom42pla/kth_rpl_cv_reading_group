@@ -1,5 +1,5 @@
 <template>
-  <div class="py-3 border-bottom">
+  <div class="py-3" :class="{ 'border-bottom': !noBottomBorder }">
     <div class="container">
       <div class="row">
         <div class="col col-12 col-lg-6 text-muted small mb-2">📅 {{ formattedDate }}</div>
@@ -9,60 +9,64 @@
       <div
         v-for="(session, index) in sessions"
         :key="session.session_number ?? index"
-        :class="{ 'pt-3 mt-2 border-top': index > 0 }"
+        :class="{ 'pt-3 mt-2': index > 0 }"
       >
         <!-- topic -->
         <div v-if="session.topic && index === 0" class="row">
           <div class="col text-muted mb-1 small">🏷️ {{ session.topic }} topic</div>
         </div>
         <div class="row">
-          <div class="col col-12 col-lg-6 text-muted small mb-1">🕐 {{ session.time }}</div>
-          <div v-if="session.presenter" class="col col-12 col-lg-6 text-muted small mb-1">
-            🎤 {{ session.presenter }}
-          </div>
-        </div>
-        <!-- paper details -->
-        <div class="row">
-          <div class="col lead mb-1">
-            {{ session.paper_title }}
-          </div>
-        </div>
-        <div class="row">
-          <div v-if="session.paper_authors" class="col col-12 col-lg-6 text-muted small mb-1">
-            {{ session.paper_authors }}
-          </div>
-          <div v-if="session.paper_venue" class="col col-12 col-lg-4 text-muted small mb-1">
-            {{ session.paper_venue }}, {{ session.paper_year }}
-          </div>
-        </div>
-        <!-- buttons -->
-        <div class="row">
-          <div class="col mb-1">
-            <a
-              v-if="session.paper_link"
-              :href="session.paper_link"
-              class="btn btn-sm btn-primary me-2"
-              target="_blank"
-            >
-              Read paper
-            </a>
-            <a
-              v-if="session.arxiv_link"
-              :href="session.arxiv_link"
-              class="btn btn-sm me-2"
-              style="background-color: #b31b1b; color: white"
-              target="_blank"
-            >
-              Read paper on arXiv
-            </a>
-            <a
-              v-if="session.slides_link"
-              :href="session.slides_link"
-              class="btn btn-sm btn-secondary me-2"
-              target="_blank"
-            >
-              Read slides
-            </a>
+          <div class="col border-start">
+            <div class="row">
+              <div class="col col-12 col-lg-6 text-muted small mb-1">🕐 {{ session.time }}</div>
+              <div v-if="session.presenter" class="col col-12 col-lg-6 text-muted small mb-1">
+                🎤 {{ session.presenter }}
+              </div>
+            </div>
+            <!-- paper details -->
+            <div class="row">
+              <div class="col lead mb-1">
+                {{ session.paper_title }}
+              </div>
+            </div>
+            <div class="row">
+              <div v-if="session.paper_authors" class="col col-12 col-lg-6 text-muted small mb-1">
+                {{ session.paper_authors }}
+              </div>
+              <div v-if="session.paper_venue" class="col col-12 col-lg-4 text-muted small mb-1">
+                {{ session.paper_venue }}, {{ session.paper_year }}
+              </div>
+            </div>
+            <!-- buttons -->
+            <div class="row">
+              <div class="col mb-1">
+                <a
+                  v-if="session.paper_link"
+                  :href="session.paper_link"
+                  class="btn btn-sm btn-primary me-2"
+                  target="_blank"
+                >
+                  Read paper
+                </a>
+                <a
+                  v-if="session.arxiv_link"
+                  :href="session.arxiv_link"
+                  class="btn btn-sm me-2"
+                  style="background-color: #b31b1b; color: white"
+                  target="_blank"
+                >
+                  Read paper on arXiv
+                </a>
+                <a
+                  v-if="session.slides_link"
+                  :href="session.slides_link"
+                  class="btn btn-sm btn-secondary me-2"
+                  target="_blank"
+                >
+                  Read slides
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -91,6 +95,7 @@ interface Session {
 
 const props = defineProps<{
   sessions: Session[]
+  noBottomBorder?: boolean
 }>()
 
 const formattedDate = computed(() => {

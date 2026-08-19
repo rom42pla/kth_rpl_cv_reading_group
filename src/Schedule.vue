@@ -70,7 +70,7 @@
                 <div class="text-muted lead">Retrieving data...</div>
               </div>
               <template v-else>
-                <ScheduleSessionGroup v-if="nextGroup" :sessions="nextGroup" />
+                <ScheduleSessionGroup v-if="nextGroup" :sessions="nextGroup" no-bottom-border />
                 <p v-else class="text-muted">No upcoming seminar scheduled.</p>
               </template>
             </div>
@@ -91,10 +91,7 @@
           </h2>
           <div class="accordion-collapse" :class="openScheduled ? 'collapse show' : 'collapse'">
             <div class="accordion-body">
-              <template
-                v-for="(group, index) in pagedScheduledGroups"
-                :key="'scheduled-' + index"
-              >
+              <template v-for="(group, index) in pagedScheduledGroups" :key="'scheduled-' + index">
                 <ScheduleSessionGroup :sessions="group" />
               </template>
               <p v-if="!scheduledSessions.length" class="text-muted">
@@ -281,9 +278,7 @@ onMounted(async () => {
     }
   })
 
-  const past = mapped
-    .filter((s) => isPastDate(s.date))
-    .sort((a, b) => b.date.localeCompare(a.date))
+  const past = mapped.filter((s) => isPastDate(s.date)).sort((a, b) => b.date.localeCompare(a.date))
   const future = mapped
     .filter((s) => !isPastDate(s.date))
     .sort((a, b) => a.date.localeCompare(b.date))
