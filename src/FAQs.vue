@@ -20,15 +20,10 @@
       </p>
 
       <h3>When?</h3>
-      <p>
-        RG sessions will be on Tuesday from 13:00 to 14:30, once every two weeks. Exceptionally, the
-        first session will be on Thursday, 2026-06-11, starting at 13:15, in order not to clash with
-        another EECS event. The other sessions will resume from August: 2026-08-18, 2026-09-01,
-        2026-09-15, 2026-09-29, etc.
-      </p>
+      <p>RG sessions will be on Tuesday from 13:00 to 14:30, once every two weeks.</p>
 
       <h3>Where?</h3>
-      <p>TBA, dependent on the number of participants</p>
+      <p>Always in Fantum, floor 5, Lindstetsvagen 24, unless differently specified.</p>
 
       <h3>Who is welcome?</h3>
       <p>
